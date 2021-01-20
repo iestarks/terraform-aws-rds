@@ -1,22 +1,71 @@
 locals {
-  db_subnet_group_name          = var.db_subnet_group_name != "" ? var.db_subnet_group_name : module.db_subnet_group.this_db_subnet_group_id
+  #db_subnet_group_name          = var.db_subnet_group_name != "" ? var.db_subnet_group_name : module.db_subnet_group.this_db_subnet_group_id
   enable_create_db_subnet_group = var.db_subnet_group_name == "" ? var.create_db_subnet_group : false
 
   parameter_group_name_id = var.parameter_group_name != "" ? var.parameter_group_name : module.db_parameter_group.this_db_parameter_group_id
 
   option_group_name             = var.option_group_name != "" ? var.option_group_name : module.db_option_group.this_db_option_group_id
   enable_create_db_option_group = var.create_db_option_group ? true : var.option_group_name == "" && var.engine != "postgres"
+
+  subnet_ids_string = join(",", data.aws_subnet_ids.database.ids)
+  subnet_ids_list = split(",", local.subnet_ids_string)
+
 }
 
-module "db_subnet_group" {
-  source = "./modules/db_subnet_group"
 
-  create      = local.enable_create_db_subnet_group
-  identifier  = var.identifier
-  name_prefix = "${var.identifier}-"
-  subnet_ids  = var.subnet_ids
+# module "db_subnet_group" {
+#   source = "./modules/db_subnet_group"
 
-  tags = var.tags
+#   create      = local.enable_create_db_subnet_group
+#   identifier  = var.identifier
+#   name_prefix = "${var.identifier}-"
+#   tags = var.tags
+# }
+
+data "aws_vpc" "usbank_vpc" {
+
+  filter {
+    name = "tag:Name"
+    values = [var.vpcname]
+  }
+}
+
+
+data "aws_subnet_ids" "database" {
+  vpc_id = data.aws_vpc.usbank_vpc.id
+ tags = {
+    Name = "bankus_east-1-vpc-public-*"
+ }
+
+  # tags = {
+  # Name = "bankus_east-1-vpc-db-us-east-1a",
+  # Name = "bankus_east-1-vpc-db-us-east-1c",  # insert value here
+
+}
+
+data "aws_subnet" "database" {
+  vpc_id = data.aws_vpc.usbank_vpc.id
+  count = length(data.aws_subnet_ids.database.ids)
+  id    = local.subnet_ids_list[count.index]
+}
+
+
+
+data "aws_security_group" "this" {
+  vpc_id = data.aws_vpc.usbank_vpc.id
+  #  filter {
+  #   name   = "tag:Name"
+     #values = ["bankus_east-1-vpc-public-us-east-1a"] # insert value here
+  tags = {
+  Name = "usbank_mysql"
+  # insert value here
+  }
+}
+
+data "aws_db_subnet_group" "database"{
+    #vpc_id = data.aws_vpc.usbank_vpc.id
+    name = var.dbname
+
 }
 
 module "db_parameter_group" {
@@ -66,7 +115,7 @@ module "db_instance" {
   kms_key_id        = var.kms_key_id
   license_model     = var.license_model
 
-  name                                = var.name
+  name                                = var.dbname
   username                            = var.username
   password                            = var.password
   port                                = var.port
@@ -78,8 +127,9 @@ module "db_instance" {
 
   snapshot_identifier = var.snapshot_identifier
 
-  vpc_security_group_ids = var.vpc_security_group_ids
-  db_subnet_group_name   = local.db_subnet_group_name
+ vpc_security_group_ids = [data.aws_security_group.this.id]
+  #db_subnet_group_name   = local.db_subnet_group_name
+   db_subnet_group_name   = data.aws_db_subnet_group.database.name
   parameter_group_name   = local.parameter_group_name_id
   option_group_name      = local.option_group_name
 

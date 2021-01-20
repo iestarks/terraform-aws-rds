@@ -86,12 +86,14 @@ output "this_db_instance_ca_cert_identifier" {
 
 output "this_db_subnet_group_id" {
   description = "The db subnet group name"
-  value       = module.db_subnet_group.this_db_subnet_group_id
+  value = data.aws_db_subnet_group.database.id
+  #value       = module.db_subnet_group.this_db_subnet_group_id
 }
 
 output "this_db_subnet_group_arn" {
   description = "The ARN of the db subnet group"
-  value       = module.db_subnet_group.this_db_subnet_group_arn
+  #value       = module.db_subnet_group.this_db_subnet_group_arn
+  value =  data.aws_db_subnet_group.database.arn
 }
 
 output "this_db_parameter_group_id" {

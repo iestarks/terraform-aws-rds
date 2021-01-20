@@ -1,11 +1,20 @@
+variable "vpcname" {
+  description = "Name to be used on all the resources as identifier"
+  type        = string
+  default     = "bankus_east-1-vpc"
+}
+
+
 variable "identifier" {
   description = "The name of the RDS instance, if omitted, Terraform will assign a random, unique identifier"
   type        = string
+  default = "mysql"
 }
 
 variable "allocated_storage" {
   description = "The allocated storage in gigabytes"
   type        = string
+  default = "100"
 }
 
 variable "storage_type" {
@@ -65,11 +74,13 @@ variable "domain_iam_role_name" {
 variable "engine" {
   description = "The database engine to use"
   type        = string
+  default = "mysql"
 }
 
 variable "engine_version" {
   description = "The engine version to use"
   type        = string
+  default = "5.7.17"
 }
 
 variable "final_snapshot_identifier" {
@@ -81,27 +92,31 @@ variable "final_snapshot_identifier" {
 variable "instance_class" {
   description = "The instance type of the RDS instance"
   type        = string
+  default =  "db.t2.medium"
 }
 
-variable "name" {
+variable "dbname" {
   description = "The DB name to create. If omitted, no database is created initially"
   type        = string
-  default     = ""
+  default     = "usbank_mysql"
 }
 
 variable "username" {
   description = "Username for the master DB user"
   type        = string
+  default = "dba"
 }
 
 variable "password" {
   description = "Password for the master DB user. Note that this may show up in logs, and it will be stored in the state file"
   type        = string
+  default = "password!"
 }
 
 variable "port" {
   description = "The port on which the DB accepts connections"
   type        = string
+  default = "3306"
 }
 
 variable "vpc_security_group_ids" {
@@ -113,7 +128,7 @@ variable "vpc_security_group_ids" {
 variable "db_subnet_group_name" {
   description = "Name of DB subnet group. DB instance will be created in the VPC associated with the DB subnet group. If unspecified, will be created in the default VPC"
   type        = string
-  default     = ""
+  default     = "mysql-grp"
 }
 
 variable "parameter_group_description" {
@@ -137,7 +152,7 @@ variable "option_group_name" {
 variable "availability_zone" {
   description = "The Availability Zone of the RDS instance"
   type        = string
-  default     = ""
+  default     = "us-east-1a"
 }
 
 variable "multi_az" {
@@ -203,6 +218,7 @@ variable "apply_immediately" {
 variable "maintenance_window" {
   description = "The window to perform maintenance in. Syntax: 'ddd:hh24:mi-ddd:hh24:mi'. Eg: 'Mon:00:00-Mon:03:00'"
   type        = string
+  default = "Mon:03:00-Mon:04:00"
 }
 
 variable "skip_final_snapshot" {
@@ -226,6 +242,7 @@ variable "backup_retention_period" {
 variable "backup_window" {
   description = "The daily time range (in UTC) during which automated backups are created if they are enabled. Example: '09:46-10:16'. Must not overlap with maintenance_window"
   type        = string
+ default = "22:00-03:00"
 }
 
 variable "tags" {
@@ -235,17 +252,19 @@ variable "tags" {
 }
 
 # DB subnet group
+
 variable "subnet_ids" {
   description = "A list of VPC subnet IDs"
   type        = list(string)
-  default     = []
+  default     = ["subnet-072f9a82b6c55846c","subnet-02a62a99a28e2215c"]
 }
+
 
 # DB parameter group
 variable "family" {
   description = "The family of the DB parameter group"
   type        = string
-  default     = ""
+  default     = "mysql5.7"
 }
 
 variable "parameters" {
@@ -264,7 +283,7 @@ variable "option_group_description" {
 variable "major_engine_version" {
   description = "Specifies the major version of the engine that this option group should be associated with"
   type        = string
-  default     = ""
+  default     = "5.7"
 }
 
 variable "options" {
@@ -360,7 +379,7 @@ variable "performance_insights_retention_period" {
 variable "max_allocated_storage" {
   description = "Specifies the value for Storage Autoscaling"
   type        = number
-  default     = 0
+  default     = 200
 }
 
 variable "ca_cert_identifier" {
