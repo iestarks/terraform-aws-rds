@@ -53,12 +53,8 @@ data "aws_subnet" "database" {
 
 data "aws_security_group" "this" {
   vpc_id = data.aws_vpc.usbank_vpc.id
-  #  filter {
-  #   name   = "tag:Name"
-     #values = ["bankus_east-1-vpc-public-us-east-1a"] # insert value here
   tags = {
   Name = "usbank_mysql"
-  # insert value here
   }
 }
 
